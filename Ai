@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIN Chat</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+height:100vh;
+overflow:hidden;
+background:#07111f;
+color:white;
+}
+
+/* Splash Screen */
+#splash{
+position:fixed;
+inset:0;
+background:#00d9ff;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+z-index:100;
+transition:opacity .8s;
+}
+
+#splash h1{
+font-size:55px;
+}
+
+#splash p{
+font-size:20px;
+margin-top:10px;
+}
+
+/* Animated Background */
+.bg{
+position:fixed;
+inset:0;
+z-index:-2;
+background:linear-gradient(-45deg,#07111f,#0f172a,#1e3a8a,#00cfff);
+background-size:400% 400%;
+animation:bgMove 15s ease infinite;
+}
+
+@keyframes bgMove{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+}
+
+.blob{
+position:absolute;
+border-radius:50%;
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(40px);
+border:1px solid rgba(255,255,255,.12);
+animation:float 15s ease-in-out infinite alternate;
+}
+
+.blob:nth-child(1){
+width:260px;height:260px;
+top:-60px;left:-60px;
+}
+
+.blob:nth-child(2){
+width:220px;height:220px;
+top:25%;right:-80px;
+animation-duration:18s;
+}
+
+.blob:nth-child(3){
+width:320px;height:320px;
+bottom:-120px;left:30%;
+animation-duration:16s;
+}
+
+@keyframes float{
+from{transform:translate(-20px,-20px);}
+to{transform:translate(25px,30px);}
+}
+
+/* Main App */
+#app{
+display:none;
+height:100vh;
+flex-direction:column;
+}
+
+header{
+padding:18px 20px;
+display:flex;
+justify-content:flex-start;
+align-items:center;
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(20px);
+border-bottom:1px solid rgba(255,255,255,.12);
+}
+
+.logo{
+font-size:28px;
+font-weight:800;
+background:linear-gradient(90deg,#000000,#0066ff,#00bfff);
+-webkit-background-clip:text;
+background-clip:text;
+color:transparent;
+letter-spacing:.5px;
+}
+
+#chat{
+flex:1;
+overflow:auto;
+padding:16px;
+}
+
+.msg{
+max-width:82%;
+padding:14px 16px;
+margin-bottom:12px;
+border-radius:22px;
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(20px);
+border:1px solid rgba(255,255,255,.15);
+line-height:1.5;
+}
+
+.user{
+margin-left:auto;
+background:rgba(0,217,255,.22);
+}
+
+.bottom{
+display:flex;
+gap:10px;
+padding:14px;
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(20px);
+border-top:1px solid rgba(255,255,255,.12);
+}
+
+input{
+flex:1;
+padding:14px;
+border:none;
+outline:none;
+border-radius:30px;
+background:rgba(255,255,255,.08);
+color:white;
+}
+
+input::placeholder{
+color:#cbd5e1;
+}
+
+button{
+padding:14px 22px;
+border:none;
+border-radius:30px;
+background:#00d9ff;
+color:#03232d;
+font-weight:bold;
+cursor:pointer;
+}
+
+.cursor{
+display:inline-block;
+width:3px;
+height:20px;
+background:#00d9ff;
+margin-left:3px;
+animation:blink .8s infinite;
+}
+
+@keyframes blink{
+50%{opacity:0;}
+}
+</style>
+</head>
+
+<body>
+
+<div id="splash">
+<h1>Hello</h1>
+<p>Let's Get Started</p>
+</div>
+
+<div class="bg">
+<div class="blob"></div>
+<div class="blob"></div>
+<div class="blob"></div>
+</div>
+
+<div id="app">
+
+<header>
+<h1 class="logo">AIN Chat</h1>
+</header>
+
+<div id="chat">
+<div class="msg">
+<span id="welcome"></span><span class="cursor"></span>
+</div>
+</div>
+
+<div class="bottom">
+<input id="prompt" placeholder="Message AIN Chat...">
+<button onclick="sendMsg()">Send</button>
+</div>
+
+</div>
+
+<script>
+const splash=document.getElementById("splash");
+const app=document.getElementById("app");
+const welcome=document.getElementById("welcome");
+const chat=document.getElementById("chat");
+
+function typeWelcome(){
+const text="Welcome! How can I help you?";
+let i=0;
+welcome.textContent="";
+const timer=setInterval(()=>{
+welcome.textContent+=text[i];
+i++;
+if(i===text.length) clearInterval(timer);
+},70);
+}
+
+function openApp(){
+splash.style.opacity="0";
+setTimeout(()=>{
+splash.style.display="none";
+app.style.display="flex";
+typeWelcome();
+},800);
+}
+
+if(localStorage.getItem("ain_first_open")){
+splash.style.display="none";
+app.style.display="flex";
+typeWelcome();
+}else{
+localStorage.setItem("ain_first_open","1");
+setTimeout(openApp,3000);
+}
+
+function sendMsg(){
+
+const input=document.getElementById("prompt");
+const text=input.value.trim();
+
+if(!text)return;
+
+chat.innerHTML+=`
+<div class="msg user">${text}</div>
+`;
+
+input.value="";
+chat.scrollTop=chat.scrollHeight;
+
+setTimeout(()=>{
+
+const q=text.toLowerCase();
+let reply;
+
+if(
+q.includes("owner")||
+q.includes("developer")||
+q.includes("creator")||
+q.includes("who made you")||
+q.includes("who created you")||
+q.includes("ai er owner")||
+q.includes("ei ai er owner")
+){
+reply="The owner and developer of AIN Chat is Nayeem from Bangladesh. 🇧🇩";
+}else{
+reply="I'm AIN Chat. This is a demo version. Connect an AI API to get real AI responses.";
+}
+
+chat.innerHTML+=`
+<div class="msg">${reply}</div>
+`;
+
+chat.scrollTop=chat.scrollHeight;
+
+},600);
+
+}
+
+document.getElementById("prompt").addEventListener("keypress",e=>{
+if(e.key==="Enter") sendMsg();
+});
+</script>
+
+</body>
+</html>
